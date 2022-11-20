@@ -13,10 +13,11 @@ import org.xpathqs.driver.log.Log
 import org.xpathqs.driver.model.IBaseModel
 import org.xpathqs.driver.model.modelFromUi
 import org.xpathqs.driver.navigation.annotations.UI
-import org.xpathqs.framework.должна
-import org.xpathqs.framework.отображатьсяОшибкаВалидацииТекстом
-import org.xpathqs.framework.отсутствоватьОшибкаВалидации
-import org.xpathqs.framework.отсутствоватьОшибкаВалидацииТекстом
+import org.xpathqs.framework.base.BaseUiTest
+import org.xpathqs.framework.extensions.haveValidationErrorWithText
+import org.xpathqs.framework.extensions.noValidationError
+import org.xpathqs.framework.extensions.noValidationErrorWithText
+import org.xpathqs.framework.extensions.should
 import org.xpathqs.gwt.WHEN
 import org.xpathqs.web.selenium.executor.SeleniumBaseExecutor
 import kotlin.reflect.KMutableProperty
@@ -27,7 +28,6 @@ interface IValidationCheck {
 }
 
 abstract class ValidationCheck(
-    private val takeScreenshot: Boolean = true,
     var stateHolder: IPageStateHolder? = null
 ) : IValidationCheck {
 
@@ -77,7 +77,7 @@ abstract class ValidationCheck(
             vc.rule.input(vc.v.prop, model, (vc.rule.value - 1).toString())
             (block.rootParent as Page).removeInputFocus()
         }.THEN("ошибка валидации не должна отображаться") {
-            block должна отсутствоватьОшибкаВалидации
+            block should noValidationError
             screenshot(block)
         }
 
@@ -85,7 +85,7 @@ abstract class ValidationCheck(
             vc.rule.input(vc.v.prop, model, (vc.rule.value).toString())
             (block.rootParent as Page).removeInputFocus()
         }.THEN("ошибка валидации не должна отображаться") {
-            block должна отсутствоватьОшибкаВалидации
+            block should noValidationError
             screenshot(block)
         }
 
@@ -93,7 +93,7 @@ abstract class ValidationCheck(
             vc.rule.invalidate(vc.v.prop, uiModel)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("ошибка валидации должна отображаться c текстом '${vc.rule.hint}'") {
-            block должна отображатьсяОшибкаВалидацииТекстом(vc.rule.hint)
+            block should haveValidationErrorWithText(vc.rule.hint)
             screenshot((block as ValidationInput).lblError)
         }
 
@@ -101,7 +101,7 @@ abstract class ValidationCheck(
             vc.rule.revert(vc.v.prop, stateHolder!!.model)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("ошибка валидации должна исчезнуть") {
-            block должна отсутствоватьОшибкаВалидации
+            block should noValidationError
             screenshot(block)
         }
     }
@@ -119,7 +119,7 @@ abstract class ValidationCheck(
                 (block.rootParent as Page).findWithAnnotation(UI.Widgets.Submit::class)?.let {it.click()}
             }
         }.THEN("должна быть отображена ошибка валидации c текстом '${vc.rule.hint}'") {
-            block должна отображатьсяОшибкаВалидацииТекстом(vc.rule.hint)
+            block should haveValidationErrorWithText(vc.rule.hint)
             screenshot((block as ValidationInput).lblError)
         }
 
@@ -135,7 +135,7 @@ abstract class ValidationCheck(
                 (block.rootParent as Page).findWithAnnotation(UI.Widgets.Submit::class)?.let {it.click()}
             }
         }.THEN("ошибка валидации должна исчезнуть") {
-            block должна отсутствоватьОшибкаВалидацииТекстом(rule.hint)
+            block should noValidationErrorWithText(rule.hint)
             screenshot(block)
         }
     }
@@ -148,7 +148,7 @@ abstract class ValidationCheck(
                 rule.input(v.prop, model, DateHelper.dayInPast)
                 (block.rootParent as Page).removeInputFocus()
             }.THEN("Ошибка валидации не должна отображаться") {
-                block должна отсутствоватьОшибкаВалидации
+                block should noValidationError
                 screenshot(block)
             }
         } else {
@@ -156,7 +156,7 @@ abstract class ValidationCheck(
                 rule.input(v.prop, model, DateHelper.dayInPast)
                 (block.rootParent as Page).removeInputFocus()
             }.THEN("Должна отображаться ошибка валидации c текстом '${rule.hint}'") {
-                block должна отображатьсяОшибкаВалидацииТекстом(rule.hint)
+                block should haveValidationErrorWithText(rule.hint)
                 screenshot((block as ValidationInput).lblError)
             }
         }
@@ -166,7 +166,7 @@ abstract class ValidationCheck(
                 rule.input(v.prop, model, DateHelper.currentDay)
                 (block.rootParent as Page).removeInputFocus()
             }.THEN("Ошибка валидации не должна отображаться") {
-                block должна отсутствоватьОшибкаВалидации
+                block should noValidationError
                 screenshot(block)
             }
         } else {
@@ -174,7 +174,7 @@ abstract class ValidationCheck(
                 rule.input(v.prop, model, DateHelper.currentDay)
                 (block.rootParent as Page).removeInputFocus()
             }.THEN("Должна отображаться ошибка валидации c текстом '${rule.hint}'") {
-                block должна отображатьсяОшибкаВалидацииТекстом(rule.hint)
+                block should haveValidationErrorWithText(rule.hint)
                 screenshot((block as ValidationInput).lblError)
             }
         }
@@ -184,7 +184,7 @@ abstract class ValidationCheck(
                 rule.input(v.prop, model, DateHelper.dayInFuture)
                 (block.rootParent as Page).removeInputFocus()
             }.THEN("Ошибка валидации не должна отображаться") {
-                block должна отсутствоватьОшибкаВалидации
+                block should noValidationError
                 screenshot(block)
             }
         } else {
@@ -192,7 +192,7 @@ abstract class ValidationCheck(
                 rule.input(v.prop, model, DateHelper.dayInFuture)
                 (block.rootParent as Page).removeInputFocus()
             }.THEN("Должна отображаться ошибка валидации c текстом '${rule.hint}'") {
-                block должна отображатьсяОшибкаВалидацииТекстом(rule.hint)
+                block should haveValidationErrorWithText(rule.hint)
                 screenshot((block as ValidationInput).lblError)
             }
         }
@@ -206,7 +206,7 @@ abstract class ValidationCheck(
             rule.input(v.prop, model, originValue)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("Должна отображаться ошибка валидации c текстом '${rule.hint}'") {
-            block должна отображатьсяОшибкаВалидацииТекстом(rule.hint)
+            block should haveValidationErrorWithText(rule.hint)
             screenshot((block as ValidationInput).lblError)
         }
 
@@ -214,7 +214,7 @@ abstract class ValidationCheck(
             rule.invalidate(v.prop, uiModel)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("Должна отображаться ошибка валидации c текстом '${rule.hint}'") {
-            block должна отображатьсяОшибкаВалидацииТекстом(rule.hint)
+            block should haveValidationErrorWithText(rule.hint)
             screenshot((block as ValidationInput).lblError)
         }
     }
@@ -227,7 +227,7 @@ abstract class ValidationCheck(
             rule.input(v.prop, model, originValue)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("Ошибка валидации не должна отображаться") {
-            block должна отсутствоватьОшибкаВалидации
+            block should noValidationError
             screenshot(block)
         }
 
@@ -235,7 +235,7 @@ abstract class ValidationCheck(
             rule.invalidate(v.prop, uiModel)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("Должна отображаться ошибка валидации c текстом '${rule.hint}'") {
-            block должна отображатьсяОшибкаВалидацииТекстом(rule.hint)
+            block should haveValidationErrorWithText(rule.hint)
             screenshot((block as ValidationInput).lblError)
         }
     }
@@ -247,7 +247,7 @@ abstract class ValidationCheck(
             rule.invalidate(v.prop, uiModel)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("Должна отображаться ошибка валидации c текстом '${rule.hint}'") {
-            block должна отображатьсяОшибкаВалидацииТекстом(rule.hint)
+            block should haveValidationErrorWithText(rule.hint)
             screenshot((block as ValidationInput).lblError)
         }
     }
@@ -277,7 +277,7 @@ abstract class ValidationCheck(
             model.fill(v.prop as KMutableProperty<*>)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("Ошибка валидации не должна отображаться") {
-            block должна отсутствоватьОшибкаВалидации
+            block should noValidationError
             screenshot(block)
         }
 
@@ -285,13 +285,13 @@ abstract class ValidationCheck(
             rule.invalidate(v.prop, model)
             (block.rootParent as Page).removeInputFocus()
         }.THEN("Ошибка валидации должна отображаться") {
-            block должна отображатьсяОшибкаВалидацииТекстом(rule.hint)
+            block should haveValidationErrorWithText(rule.hint)
             screenshot((block as ValidationInput).lblError)
         }
     }
 
     private fun screenshot(block: BaseSelector) {
-        if(takeScreenshot) {
+        if(!BaseUiTest.config.disableAllScreenshots) {
             val before = SeleniumBaseExecutor.enableScreenshots
             SeleniumBaseExecutor.enableScreenshots = true
             block.screenshot()

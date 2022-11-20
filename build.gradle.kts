@@ -75,7 +75,6 @@ dependencies {
     api("com.willowtreeapps.assertk:assertk-jvm:0.23.1")
     api("io.qameta.allure:allure-testng:2.14.0")
 
-
     implementation("org.slf4j:slf4j-log4j12:1.7.29")
 
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
@@ -132,9 +131,9 @@ publishing {
     }
 }
 
-/* signing {
+signing {
      sign(publishing.publications["mavenJava"])
- }*/
+}
 
 tasks.test {
     useJUnitPlatform()

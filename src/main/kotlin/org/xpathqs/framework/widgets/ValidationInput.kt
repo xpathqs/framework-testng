@@ -9,13 +9,13 @@ import org.xpathqs.core.selector.extensions.parentCount
 import org.xpathqs.core.selector.extensions.text
 import org.xpathqs.core.util.SelectorFactory.tagSelector
 import org.xpathqs.core.util.SelectorFactory.textSelector
-import org.xpathqs.framework.бытьВидима
-import org.xpathqs.framework.бытьСкрыта
 import org.xpathqs.driver.extensions.*
 import org.xpathqs.driver.log.Log
 import org.xpathqs.driver.navigation.annotations.UI
 import org.xpathqs.driver.widgets.IFormInput
 import org.xpathqs.driver.widgets.IFormRead
+import org.xpathqs.framework.extensions.бытьВидима
+import org.xpathqs.framework.extensions.бытьСкрыта
 
 import org.xpathqs.web.factory.HTML
 import java.time.Duration

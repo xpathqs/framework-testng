@@ -3,14 +3,14 @@ package org.xpathqs.framework.pom
 import io.qameta.allure.Allure
 import org.testng.SkipException
 import org.xpathqs.core.selector.block.Block
-import org.xpathqs.framework.getStaticSelectorsWithState
-import org.xpathqs.framework.бытьВидимым
-import org.xpathqs.framework.должен
 import org.xpathqs.driver.extensions.click
 import org.xpathqs.driver.extensions.isHidden
 import org.xpathqs.driver.extensions.waitForAllVisible
 import org.xpathqs.driver.log.Log
 import org.xpathqs.driver.navigation.base.ILoadableDelegate
+import org.xpathqs.framework.extensions.beVisible
+import org.xpathqs.framework.extensions.getStaticSelectorsWithState
+import org.xpathqs.framework.extensions.should
 import org.xpathqs.gwt.WHEN
 import org.xpathqs.log.style.StyleFactory
 import java.time.Duration
@@ -30,8 +30,6 @@ class NavigationCheck : INavigationCheck {
         Log.tag(
             StyleFactory.testTitle("                    $name                   "), "title"
         )
-
-
 
         WHEN("Click on '${nav.clickSelector!!.name}'") {
             try {
@@ -54,7 +52,7 @@ class NavigationCheck : INavigationCheck {
             loadAndCheck
         }.THEN("'${nav.to.name}' should be present") {
             actual.forEach {
-                it должен бытьВидимым
+                it should beVisible
             }
         }
     }

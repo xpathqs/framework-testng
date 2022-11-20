@@ -8,12 +8,15 @@ import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 import org.xpathqs.core.selector.base.BaseSelector
-import org.xpathqs.framework.log.ScreenshotConfig
-import org.xpathqs.framework.pom.*
 import org.xpathqs.driver.log.Log
 import org.xpathqs.driver.model.IBaseModel
 import org.xpathqs.driver.navigation.annotations.UI.Visibility.Companion.UNDEF_STATE
+import org.xpathqs.driver.navigation.base.IGlobalState
 import org.xpathqs.driver.navigation.base.IModelBlock
+import org.xpathqs.driver.navigation.base.NoGlobalState
+import org.xpathqs.framework.annotation.getGeneratorConfig
+import org.xpathqs.framework.log.ScreenshotConfig
+import org.xpathqs.framework.pom.*
 import org.xpathqs.log.style.StyleFactory
 import java.lang.reflect.Method
 
@@ -42,14 +45,16 @@ open class BasePageTest(
     afterDriverCreated: (BaseUiTest.()->Unit)? = null,
     callbacks: UITestCallbacks = object : UITestCallbacks {},
     navigators: Collection<ThreadLocalNavigator> = listOf(DefaultNavigator),
-    navigator: IPageNavigator = Navigator
+    navigator: IPageNavigator = Navigator,
+    globalState: IGlobalState = NoGlobalState
 ) : BaseUiTest(
     startUpPage = startUpPage,
     redirectPage = redirectPage,
     afterDriverCreated = afterDriverCreated,
     navigators = navigators,
     callbacks = callbacks,
-    navigator = navigator
+    navigator = navigator,
+    globalState = globalState
 ), ITest {
 
     override fun precondition() {
@@ -85,16 +90,44 @@ open class BasePageTest(
     }
 
     @DataProvider
-    fun getStatic() = extractor.staticSelectors.toTypedArray()
+    fun getStatic() : Array<BaseSelector> {
+        val enabled = getGeneratorConfig()?.enableStaticSelectors ?: true
+        return if(enabled) {
+            extractor.staticSelectors.toTypedArray()
+        } else {
+            emptyArray()
+        }
+    }
 
     @DataProvider
-    fun getDynamic() = extractor.dynamicSelectors.toTypedArray()
+    fun getDynamic() : Array<BaseSelector> {
+        val enabled = getGeneratorConfig()?.enableDynamicSelectors ?: true
+        return if(enabled) {
+            extractor.dynamicSelectors.toTypedArray()
+        } else {
+            emptyArray()
+        }
+    }
 
     @DataProvider
-    fun getValidations() = validationExtractor.validations.toTypedArray()
+    fun getValidations() : Array<ValidationTc> {
+        val enabled = getGeneratorConfig()?.enableValidations ?: true
+        return if(enabled) {
+            validationExtractor.validations.toTypedArray()
+        } else {
+            emptyArray()
+        }
+    }
 
     @DataProvider
-    fun getClickNavigation() = navigationExtractor.getClickNavigations().toTypedArray()
+    fun getClickNavigation() : Array<NavigationTc> {
+        val enabled = getGeneratorConfig()?.enableNavigations ?: true
+        return if(enabled) {
+            navigationExtractor.getClickNavigations().toTypedArray()
+        } else {
+            emptyArray()
+        }
+    }
 
     companion object {
         val testCaseName = ThreadLocal<String>()
@@ -141,3 +174,4 @@ open class BasePageTest(
         }
     }
 }
+

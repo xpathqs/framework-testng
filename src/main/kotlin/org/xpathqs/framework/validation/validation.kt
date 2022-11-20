@@ -424,7 +424,7 @@ class Validation<T: Any>(
 
 }
 
-fun<T: Any> validationFor(config: ValidationConfig, lambda: Validations<T>.()->Unit) : Validations<T> {
+fun<T: Any> validationFor(config: ValidationConfig = ValidationConfig(), lambda: Validations<T>.()->Unit) : Validations<T> {
     val f = Validations<T>(config)
     f.lambda()
     return f

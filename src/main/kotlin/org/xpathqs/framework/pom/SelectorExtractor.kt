@@ -6,6 +6,7 @@ import org.xpathqs.core.selector.block.allInnerSelectors
 import org.xpathqs.driver.navigation.annotations.UI
 import org.xpathqs.driver.navigation.annotations.UI.Visibility.Companion.UNDEF_STATE
 import kotlin.reflect.KVisibility
+import kotlin.reflect.full.findAnnotations
 import kotlin.reflect.jvm.kotlinProperty
 
 interface ISelectorExtractor {
@@ -43,11 +44,20 @@ class SelectorExtractor(
     private val selectors : Collection<BaseSelector>
         get() {
             val result = ArrayList<BaseSelector>()
-            source.findAnnotation<UI.Nav.PathTo>()?.let {
-                it.contains.forEach {
-                    result.addAll(it.objectInstance?.allInnerSelectors ?: listOf())
+            if(source is Page) {
+                source::class.findAnnotations<UI.Nav.PathTo>().forEach { ann ->
+                    ann.contains.forEach {
+                        result.addAll(it.objectInstance?.allInnerSelectors ?: listOf())
+                    }
+                }
+            } else {
+                source.field?.kotlinProperty?.findAnnotations<UI.Nav.PathTo>()?.forEach { ann ->
+                    ann.contains.forEach {
+                        result.addAll(it.objectInstance?.allInnerSelectors ?: listOf())
+                    }
                 }
             }
+
             result.addAll(source.allInnerSelectors)
             return result
         }

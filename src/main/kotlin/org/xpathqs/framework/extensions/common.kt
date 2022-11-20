@@ -1,4 +1,4 @@
-package org.xpathqs.framework
+package org.xpathqs.framework.extensions
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
@@ -26,36 +26,8 @@ import org.xpathqs.driver.widgets.IFormRead
 import org.xpathqs.log.style.StyleFactory.selectorName
 import org.xpathqs.log.style.StyleFactory.text
 import java.time.Duration
-/*
 
-fun GIVEN(msg: String = "", l: ()->Unit) {
-    l()
-}
-
-class WHEN<G, W>(g: G, a: W) : When<G, W>(g,a) {
-    override fun THEN(msg: String, f: When<G, W>.()->Unit) = THEN(keyword("THEN ") + msg, f)
-}
-
-fun<W> WHEN(msg: String, f: GIVEN<String>.()->W): WHEN<String, W> {
-    val given = GIVEN { "" }
-    val config = AllureLogCallback.config.get()
-
-    return WHEN(
-        given.given,
-        GIVEN.log.action(keyword("WHEN ") + msg, GIVEN.WHEN) {
-            val prev = enableScreenshots
-            if(config.actionInWhen) {
-                enableScreenshots = true
-            }
-            val res = given.f()
-            enableScreenshots = prev
-            res
-        }
-    )
-}
-*/
-
-fun BaseSelector.бытьВидима() {
+fun BaseSelector.beVisible() {
     if(this is Page) {
         this.determination.exist.forEach {
             if(it.isHidden) {
@@ -74,7 +46,7 @@ fun BaseSelector.бытьВидима() {
     }
 }
 
-fun BaseSelector.бытьСкрыта() {
+fun BaseSelector.beHidden() {
     if(isVisible) {
         Log.error("$this is visible")
     }
@@ -82,7 +54,7 @@ fun BaseSelector.бытьСкрыта() {
         .isEqualTo(true)
 }
 
-fun BaseSelector.иметьТекст(text: String) {
+fun BaseSelector.haveText(text: String) {
     Log.step(text("Селектор ") + selectorName(this.name) + text(" должен иметь текст: '$text'")) {
         val actual = if(this is IFormRead) {
             this.readString()
@@ -99,14 +71,14 @@ fun BaseSelector.иметьТекст(text: String) {
     }
 }
 
-fun BaseSelector.содержатьТекст(text: String) {
+fun BaseSelector.containsText(text: String) {
     Log.step(text("Селектор ") + selectorName(this.name) + text(" должен содержать текст: '$text'")) {
         assertThat(this.text.contains(text))
             .isEqualTo(true)
     }
 }
 
-fun BaseSelector.содержатьТекст(expectedItems: Collection<String>) {
+fun BaseSelector.containsText(expectedItems: Collection<String>) {
     //val items = if(this is ValidationDropdownSelectFirst) getItems() else this.textItems
     assertThat(this.textItems)
         .isEqualTo(expectedItems)
@@ -138,57 +110,53 @@ open class ExpectedVisible(
 open class ExpectedValidation(val msg: String="",
     lambda: ValidationInput.() -> Unit) : ExpectedVisible(lambda as BaseSelector.() -> Unit)
 
-val бытьВидима = ExpectedVisible {
-    this.бытьВидима()
-}
-val бытьВидимым = бытьВидима
-val бытьВидимыми = бытьВидима
-
-val бытьСкрыта = ExpectedVisible {
-    this.бытьСкрыта()
-}
-val бытьСкрытым = бытьСкрыта
-val бытьСкрытыми = бытьСкрыта
-
-fun иметьТекст(text: String) = ExpectedText {
-    this.иметьТекст(text)
+val beVisible = ExpectedVisible {
+    this.beVisible()
 }
 
-fun содержатьЧисло(num: Int) = ExpectedInt {
+val beHidden = ExpectedVisible {
+    this.beHidden()
+}
+
+fun haveText(text: String) = ExpectedText {
+    this.haveText(text)
+}
+
+fun containsNumber(num: Int) = ExpectedInt {
     Log.step(text("Селектор ") + selectorName(this.name) + text(" должен содержать число: '$num'")) {
         assertThat(this.text.filter { it.isDigit() }.toInt())
             .isEqualTo(num)
     }
 }
 
-fun иметьКоличество(num: Int) = ExpectedInt {
+fun haveCount(num: Int) = ExpectedInt {
     Log.step(text("Селектор ") + selectorName(this.name) + text(" должен иметь '$num' число элементов: ")) {
         assertThat(this.count)
             .isEqualTo(num)
     }
 }
 
-fun содержатьТекст(text: String) = ExpectedText {
-    this.содержатьТекст(text)
+fun containsText(text: String) = ExpectedText {
+    this.containsText(text)
 }
 
-fun содержатьТекст(items: Collection<String>) = ExpectedText {
-    this.содержатьТекст(items)
+fun containsText(items: Collection<String>) = ExpectedText {
+    this.containsText(items)
 }
 
-val отсутствоватьОшибкаВалидации = ExpectedValidation("Ошибка валидации должна отсутствовать для ") {
+val noValidationError = ExpectedValidation("Ошибка валидации должна отсутствовать для ") {
     this.assertNoValidationError()
 }
 
-fun отсутствоватьОшибкаВалидацииТекстом(text: String) = ExpectedValidation("Ошибка валидации должна отсутствовать для ") {
+fun noValidationErrorWithText(text: String) = ExpectedValidation("Ошибка валидации должна отсутствовать для ") {
     this.assertNoValidationError(text)
 }
 
-fun отображатьсяОшибкаВалидацииТекстом(text: String) = ExpectedValidation("Ошибка валидации должна быть отображена для ") {
+fun haveValidationErrorWithText(text: String) = ExpectedValidation("Ошибка валидации должна быть отображена для ") {
     this.assertValidationErrorText(text)
 }
 
-infix fun BaseSelector.должна(arg: Expected) {
+infix fun BaseSelector.should(arg: Expected) {
     if(arg is ExpectedValidation) {
         Log.step(text(arg.msg) + selectorName(this.name)) {
             this.waitForVisible()
@@ -206,10 +174,6 @@ infix fun BaseSelector.должна(arg: Expected) {
     }
     ExpectedExec(this, arg.lambda).check()
 }
-
-infix fun BaseSelector.должно(arg: Expected) = должна(arg)
-infix fun BaseSelector.должны(arg: Expected) = должна(arg)
-infix fun BaseSelector.должен(arg: Expected) = должна(arg)
 
 fun BaseSelector.clickUntilVisible() {
     while(this.isVisible) {
@@ -245,7 +209,7 @@ fun invalidateCache() {
     tagSelector("asd").waitForVisible(Duration.ofMillis(10))
 }
 
-inline fun <T: IBaseModel, R> применитьМодель(receiver: T, crossinline block: T.() -> R): T {
+inline fun <T: IBaseModel, R> applyModel(receiver: T, crossinline block: T.() -> R): T {
     Log.step("Заполнить форму") {
         IBaseModel.disableUiUpdate()
         receiver.block()

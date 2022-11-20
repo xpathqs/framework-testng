@@ -19,6 +19,8 @@ import org.xpathqs.driver.executor.IExecutor
 import org.xpathqs.driver.i18n.I18nHelper
 import org.xpathqs.driver.log.Log
 import org.xpathqs.driver.navigation.NavExecutor
+import org.xpathqs.driver.navigation.base.IGlobalState
+import org.xpathqs.driver.navigation.base.NoGlobalState
 import org.xpathqs.framework.UiInitializer
 import org.xpathqs.framework.pom.*
 import org.xpathqs.gwt.GIVEN
@@ -91,7 +93,8 @@ open class BaseUiTest(
     protected val afterDriverCreated: (BaseUiTest.()->Unit)? = null,
     protected val navigator: IPageNavigator = Navigator,
     protected val callbacks: UITestCallbacks = object : UITestCallbacks {},
-    protected val navigators: Collection<ThreadLocalNavigator> = listOf(DefaultNavigator)
+    protected val navigators: Collection<ThreadLocalNavigator> = listOf(DefaultNavigator),
+    private val globalState: IGlobalState = NoGlobalState
 ) {
 
     protected open fun defaultSetup() {
@@ -120,11 +123,10 @@ open class BaseUiTest(
         SeleniumBaseExecutor.enableScreenshots = false
         SeleniumBaseExecutor.disableAllScreenshots = config.disableAllScreenshots
 
-        //commonData.get().driver.manage().window().fullscreen()
-
         var executor: IExecutor = NavExecutor(
-            ExecutorFactory(cd.driver).getCached(),
-            navigator.navigator
+            origin = ExecutorFactory(cd.driver).getCached(),
+            navigator = navigator.navigator,
+            globalState = globalState
         )
         cd.executor = executor as NavExecutor
         executor = DockerExecutor(executor)
@@ -250,6 +252,8 @@ open class BaseUiTest(
 
     @BeforeMethod
     fun initGwtConfig(method: Method) {
+        var clsSet = false
+        var methodSet = false
         val cls = method.javaClass.declaredFields.find { it.name == "clazz" }
         cls?.let {
             it.isAccessible = true
@@ -261,6 +265,7 @@ open class BaseUiTest(
 
             if(classAnnotation != null) {
                 AllureLogCallback.config.set(GWTConfigData(classAnnotation))
+                clsSet = true
             }
         }
         val methodAnnotation = method.declaredAnnotations.find {
@@ -269,6 +274,11 @@ open class BaseUiTest(
 
         if(methodAnnotation != null) {
             AllureLogCallback.config.set(GWTConfigData(methodAnnotation))
+            methodSet = true
+        }
+
+        if(!clsSet && !methodSet) {
+            AllureLogCallback.config.set(GWTConfigData())
         }
     }
 

@@ -10,7 +10,7 @@ class LogEvaluate : ILogEvaluate {
     override fun <G : Any> GIVEN(msg: StyledString, obj: GIVEN<G>, f: () -> G) {
         obj.given = if (msg.toString().isNotEmpty()) {
             runAndEnableScreenshots(config.actionInGiven) {
-                GIVEN.log.action(StyledString("GIVEN ") + msg, GIVEN.GIVEN, f)
+                GIVEN.log.action(StyledString("ДАНО ") + msg, GIVEN.GIVEN, f)
             }
         } else {
             f()
@@ -18,7 +18,7 @@ class LogEvaluate : ILogEvaluate {
     }
 
     override fun <G : Any, W> WHEN(msg: StyledString, obj: GIVEN<G>, f: GIVEN<G>.() -> W): W {
-        return GIVEN.log.action(StyledString("WHEN ") + msg, GIVEN.WHEN) {
+        return GIVEN.log.action(StyledString("КОГДА ") + msg, GIVEN.WHEN) {
             runAndEnableScreenshots(config.actionInWhen) {
                 obj.f()
             }
@@ -26,7 +26,7 @@ class LogEvaluate : ILogEvaluate {
     }
 
     override fun <G : Any, W> THEN(msg: StyledString, obj: When<G, W>, f: When<G, W>.() -> Unit) {
-        GIVEN.log.action(StyledString("THEN ") + msg, GIVEN.THEN) {
+        GIVEN.log.action(StyledString("ТОГДА ") + msg, GIVEN.THEN) {
             runAndEnableScreenshots(config.actionInThen) {
                 obj.f()
             }

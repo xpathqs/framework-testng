@@ -23,7 +23,7 @@ interface INavigationExtractor {
     fun getClickNavigations(): Collection<NavigationTc>
 }
 
-@OptIn(ExperimentalStdlibApi::class)
+
 class NavigationExtractor(
     private val from: org.xpathqs.core.selector.block.Block,
     private val state: Int = UNDEF_STATE
@@ -33,11 +33,14 @@ class NavigationExtractor(
         val res = ArrayList<NavigationTc>()
         from.annotations.filterIsInstance<UI.Nav.PathTo>().forEach {
             if(it.selfPageState == state) {
-                it.contains.forEach {
-                    res.addAll(
-                        getClickNavigations(it.objectInstance!!)
-                    )
-                }
+               // it.contains.forEach {
+                    if(it.contain != org.xpathqs.core.selector.block.Block::class) {
+                        res.addAll(
+                            getClickNavigations(it.contain.objectInstance!!)
+                        )
+                    }
+
+                //}
             }
         }
         return res + getClickNavigations(from)

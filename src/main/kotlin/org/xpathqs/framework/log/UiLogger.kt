@@ -54,8 +54,10 @@ open class UiLoggerCls(
         restrictions = listOf(
             RestrictionRuleHard(
                 source = ExcludeByRootMethodClsSimple("IBaseModel", "findParent")
-                // IncludeTags("step", "GIVEN", "WHEN", "THEN", "title")
             ),
+ /*           RestrictionRuleHard(
+                source = ExcludeByRootMethodClsSimple("Navigator", "getCurrentPage")
+            ),*/
         )
 
     ),

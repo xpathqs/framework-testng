@@ -1,6 +1,7 @@
 package org.xpathqs.framework.base
 
 import org.openqa.selenium.*
+import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.testcontainers.containers.BrowserWebDriverContainer
@@ -120,6 +121,8 @@ open class BaseUiTest(
 
         callbacks.beforeDriverInitializedCallback()
         initDriver()
+        commonData.get().driver.manage().timeouts().pageLoadTimeout(30, TimeUnit.SECONDS)
+
         SeleniumBaseExecutor.enableScreenshots = false
         SeleniumBaseExecutor.disableAllScreenshots = config.disableAllScreenshots
 
@@ -134,7 +137,7 @@ open class BaseUiTest(
 
         if(startUpPage != null) {
             Log.action("Open start page with address: ${startUpPage.url}") {
-                cd.driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS)
+                //cd.driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS)
                 try {
                     startUpPage.open()
                     startUpPage.waitForLoad(Duration.ofSeconds(10))
@@ -159,9 +162,7 @@ open class BaseUiTest(
         }
     }
 
-    private fun getCapabilities(): DesiredCapabilities {
-        val caps = DesiredCapabilities.chrome()
-
+    private fun getCapabilities(): ChromeOptions {
         val options = ChromeOptions()
         options.addArguments(
             "--allow-insecure-localhost",
@@ -169,8 +170,8 @@ open class BaseUiTest(
             "--safebrowsing-disable-download-protection",
         )
 
-        caps.setCapability(ChromeOptions.CAPABILITY, options)
-        caps.setCapability("acceptInsecureCerts", true)
+        options.setCapability(ChromeOptions.CAPABILITY, options)
+        options.setCapability("acceptInsecureCerts", true)
 
         val chromePrefs = HashMap<String, Any>()
         chromePrefs["profile.default_content_settings.popups"] = 0
@@ -179,7 +180,7 @@ open class BaseUiTest(
 
         options.setExperimentalOption("prefs", chromePrefs)
 
-        return caps
+        return options
     }
 
     private fun initDocker() {
@@ -215,7 +216,7 @@ open class BaseUiTest(
 
     private fun initSelenium(version: String = "latest") {
         Log.info("initSelenium called")
-        val driver = DriverFactory(capabilities = getCapabilities(), version = version).create()
+        val driver = DriverFactory(options = getCapabilities(), version = version).create()
         commonData.get().driver = driver
     }
 
@@ -334,6 +335,9 @@ open class BaseUiTest(
         val commonData = ThreadLocal<CommonData>()
         val currentPage: Page
             get() = commonData.get().executor.navigator.currentPage as Page
+
+        val driver: ChromeDriver
+            get() = commonData.get().driver as ChromeDriver
 
         fun takeScreenshot(): ByteArray {
             return (commonData.get().driver as TakesScreenshot).getScreenshotAs(OutputType.BYTES)

@@ -40,20 +40,21 @@ class SelectorExtractor(
         )
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
+    
     private val selectors : Collection<BaseSelector>
         get() {
             val result = ArrayList<BaseSelector>()
             if(source is Page) {
                 source::class.findAnnotations<UI.Nav.PathTo>().forEach { ann ->
-                    ann.contains.forEach {
-                        result.addAll(it.objectInstance?.allInnerSelectors ?: listOf())
+                    if(ann.contain != Block::class) {
+                        result.addAll(ann.contain.objectInstance?.allInnerSelectors ?: listOf())
                     }
+
                 }
             } else {
-                source.field?.kotlinProperty?.findAnnotations<UI.Nav.PathTo>()?.forEach { ann ->
-                    ann.contains.forEach {
-                        result.addAll(it.objectInstance?.allInnerSelectors ?: listOf())
+                source.property?.findAnnotations<UI.Nav.PathTo>()?.forEach { ann ->
+                    if(ann.contain != Block::class) {
+                        result.addAll(ann.contain.objectInstance?.allInnerSelectors ?: listOf())
                     }
                 }
             }
@@ -63,7 +64,7 @@ class SelectorExtractor(
         }
 
     private fun filter(it: BaseSelector): Boolean {
-        return it.field!!.kotlinProperty!!.visibility == KVisibility.PUBLIC
+        return it.property!!.visibility == KVisibility.PUBLIC
     }
 
     private fun isStaticSelector(it: BaseSelector): Boolean {

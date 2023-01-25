@@ -16,6 +16,9 @@ import org.xpathqs.driver.extensions.*
 import org.xpathqs.driver.log.Log
 import org.xpathqs.driver.navigation.annotations.UI
 import org.xpathqs.framework.base.BaseUiTest
+import org.xpathqs.framework.extensions.бытьВидимым
+import org.xpathqs.framework.extensions.бытьСкрытым
+import org.xpathqs.framework.extensions.должен
 import org.xpathqs.gwt.GIVEN
 import org.xpathqs.log.style.StyleFactory
 import org.xpathqs.web.selenium.executor.SeleniumBaseExecutor
@@ -45,7 +48,12 @@ class SelectorCheck(
                 throw e
             }
             catch (e: Exception) {
-                if(sel.hasAnnotation(UI.Visibility.Backend::class) || sel.hasAnyParentAnnotation(UI.Visibility.Backend::class)) {
+                if(sel.hasAnnotation(UI.Visibility.Backend::class)
+                    || sel.hasAnyParentAnnotation(UI.Visibility.Backend::class)
+                    || sel.hasAnyParentAnnotation(UI.Visibility.OneOf::class)
+                    || sel.hasAnnotation(UI.Visibility.OneOf::class)
+                    || sel.hasAnnotation(UI.Visibility.Backend::class)
+                ) {
                     throw SkipException("Селектор не может быть проверен, так как")
                 }
                 e.printStackTrace()
@@ -59,13 +67,15 @@ class SelectorCheck(
                 }
             }
             if(sel.isHidden) {
-                if(sel.hasAnnotation(UI.Visibility.Backend::class) || sel.hasAnyParentAnnotation(UI.Visibility.Backend::class)) {
+                if(sel.hasAnnotation(UI.Visibility.Backend::class)
+                    || sel.hasAnyParentAnnotation(UI.Visibility.Backend::class)
+                    || sel.hasAnyParentAnnotation(UI.Visibility.OneOf::class)
+                ) {
                     throw SkipException("Селектор не может быть проверен, так как")
                 }
                 println("${sel.name} is hidden")
             }
-            //sel должен бытьВидимым
-            assertThat(sel.isVisible).isTrue()
+            sel должен бытьВидимым
             if(!BaseUiTest.config.disableAllScreenshots) {
                 SeleniumBaseExecutor.enableScreenshots = true
                 sel.screenshot()
@@ -77,12 +87,11 @@ class SelectorCheck(
                         Duration.ofMillis(ann.autoCloseMs.toLong())
                     )
 
-                    assertThat(sel.isVisible).isFalse()
-                    //sel должен бытьСкрытым
+                    sel должен бытьСкрытым
                 }
             }
             if(sel.findAnnotation<UI.Visibility.Dynamic>()?.overlapped == true) {
-                (sel.rootParent as Block).findWithAnnotation(UI.Widgets.ClickToClose::class)?.click()
+                (sel.rootParent as? org.xpathqs.core.selector.block.Block)?.findWithAnnotation(UI.Widgets.ClickToClose::class)?.click()
             }
         }
     }

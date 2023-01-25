@@ -22,12 +22,12 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-version = "0.0.1"
+version = "0.0.3"
 
-val kotlinVersion = "1.6.0"
+val kotlinVersion = "1.7.10"
 
 plugins {
-    kotlin("jvm") version "1.6.0"
+    kotlin("jvm") version "1.7.10"
     id("org.jetbrains.dokka") version "1.4.32"
     `java-library`
     jacoco
@@ -56,17 +56,17 @@ dependencies {
     implementation(kotlin("stdlib"))
     api ("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
-    api("org.xpathqs:web-selenium:0.1.3")
-    api("org.xpathqs:web:0.1.3")
-    api("org.xpathqs:driver:0.1.3")
-    api("org.xpathqs:core:0.1.3")
-    api("org.xpathqs:log:0.1.3")
+    api("org.xpathqs:web-selenium:0.1.4")
+    api("org.xpathqs:web:0.1.4")
+    api("org.xpathqs:driver:0.1.5")
+    api("org.xpathqs:core:0.1.6")
+    api("org.xpathqs:log:0.1.5")
     api("org.xpathqs:prop:0.2.2")
-    api("org.xpathqs:cache:0.1")
+    api("org.xpathqs:cache:0.2")
 
-    api("org.xpathqs:gwt:0.2.3")
+    api("org.xpathqs:gwt:0.2.5")
 
-    api("org.seleniumhq.selenium:selenium-remote-driver:3.141.59")
+    api("org.seleniumhq.selenium:selenium-remote-driver:4.7.2")
     api("org.testcontainers:selenium:1.16.0")
 
     api("org.testng:testng:6.14.3")

@@ -66,9 +66,8 @@ open class Required<T>(
         if(prop is KMutableProperty<*>) {
             val sel = obj.findSelByProp(prop)
             if(sel is IFormInput) {
-                if(sel.isDisabled()) {
-                    obj.makeVisible(sel, prop, disabled = true)
-                }
+
+                obj.makeVisible(sel, prop, disabled = sel.isDisabled())
 
                 if(sel is IFormRead) {
                     if(sel.readString().isEmpty()) {
@@ -90,7 +89,7 @@ open class Required<T>(
     }
 
     override fun toString(): String {
-        return "Required value"
+        return "Обязательное поле"
     }
 }
 

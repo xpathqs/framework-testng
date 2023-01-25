@@ -243,17 +243,20 @@ fun <T: BaseSelector> T.notHidden() : T {
     return this
 }
 
-@OptIn(ExperimentalStdlibApi::class)
+
 fun Block.getStaticSelectorsWithState(state: Int, includeContains: Boolean = true): Collection<BaseSelector> {
     val res = ArrayList<BaseSelector>()
     if(includeContains) {
         this.annotations.filterIsInstance<UI.Nav.PathTo>().forEach {
             if(it.selfPageState == state) {
-                it.contains.forEach {
+               // it.contains.forEach {
+                if(it.contain != Block::class) {
                     res.addAll(
-                        it.objectInstance?.allInnerSelectors ?: emptyList()
+                        it.contain.objectInstance?.allInnerSelectors ?: emptyList()
                     )
                 }
+
+              //  }
             }
         }
     }

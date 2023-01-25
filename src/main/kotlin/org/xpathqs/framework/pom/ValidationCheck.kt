@@ -37,10 +37,11 @@ abstract class ValidationCheck(
 
     override fun checkValidation(tc: ValidationTc) {
         Allure.getLifecycle().updateTestCase {
-            it.name = "Validation of field '${tc.v.prop.name}' with type '${tc.rule}'"
+           // it.name = "Validation of field '${tc.v.prop.name}' with type '${tc.rule}'"
+            it.name = "Валидация поля '${tc.v.prop.name}' с типом '${tc.rule}'"
         }
 
-        stateHolder!!.save()
+        stateHolder?.save()
         val model = tc.model ?: model
         if(model?.isApplyModel == true && applyModels.contains(model)) {
             model.fill(true)
@@ -52,7 +53,7 @@ abstract class ValidationCheck(
                 throw SkipException("Skipped due to the condition restriction")
             }
             if(!tc.skipRevert) {
-                stateHolder!!.revert()
+                stateHolder?.revert()
             }
             uiModel = model.modelFromUi
             when(tc.rule) {
@@ -98,7 +99,10 @@ abstract class ValidationCheck(
         }
 
         WHEN("корректное значение повторно введено") {
-            vc.rule.revert(vc.v.prop, stateHolder!!.model)
+            stateHolder?.let {
+                vc.rule.revert(vc.v.prop, it.model)
+            }
+
             (block.rootParent as Page).removeInputFocus()
         }.THEN("ошибка валидации должна исчезнуть") {
             block should noValidationError
@@ -125,7 +129,9 @@ abstract class ValidationCheck(
 
         WHEN("корректное значение введено") {
             if(!vc.v.parent.isInvalidAtStart) {
-                vc.rule.revert(vc.v.prop, stateHolder!!.model)
+                stateHolder?.let {
+                    vc.rule.revert(vc.v.prop, it.model)
+                }
             } else {
                 model.fill(vc.v.prop as KMutableProperty<*>)
             }
@@ -257,7 +263,7 @@ abstract class ValidationCheck(
         items.forEach {
             val (k, r) = it
             Log.step("Проверка правила валидации когда значение полня '${rule.prop.name}' равно '$k'") {
-                stateHolder!!.revert()
+                stateHolder?.revert()
                 model.setValueByProp(rule.prop as KMutableProperty<*>, k)
                 checkValidation(
                     ValidationTc(

@@ -14,6 +14,7 @@ import org.xpathqs.driver.navigation.annotations.UI
 import org.xpathqs.driver.navigation.base.*
 import org.xpathqs.driver.navigation.impl.Loadable
 import org.xpathqs.driver.navigation.impl.NavigableDetermination
+import org.xpathqs.framework.base.BaseUiTest
 import org.xpathqs.web.WebPage
 import java.time.Duration
 
@@ -55,8 +56,12 @@ open class Page(
         }
     }
 
-    fun refresh() {
-      //  BaseUiTest.commonData.get().driver.navigate().refresh()
+    open fun refresh() {
+        if(url.isNotEmpty()) {
+            BaseUiTest.commonData.get().driver.get(url)
+        } else {
+            BaseUiTest.commonData.get().driver.navigate().refresh()
+        }
     }
 
     open fun openByUrl() {

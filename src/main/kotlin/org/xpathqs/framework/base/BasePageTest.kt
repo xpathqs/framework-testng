@@ -146,7 +146,8 @@ open class BasePageTest(
                     testCaseName.set(arg.name)
                 }
                 is ValidationTc -> {
-                    val title = "Validation for field '${arg.v.prop.name}' with type '${arg.rule}'"
+                    //val title = "Validation for field '${arg.v.prop.name}' with type '${arg.rule}'"
+                    val title = "Валидация поля '${arg.v.prop.name}' с типом '${arg.rule}'"
                     testCaseName.set(title)
                     Log.tag(
                         StyleFactory.testTitle("                    $title                    "), "title"

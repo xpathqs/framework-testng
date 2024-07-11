@@ -22,16 +22,16 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-version = "0.0.3"
+version = "0.0.8"
 
-val kotlinVersion = "1.7.10"
+val kotlinVersion = "1.9.20"
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.9.20"
     id("org.jetbrains.dokka") version "1.4.32"
     `java-library`
     jacoco
-    maven
+ //   maven
     `maven-publish`
     signing
 }
@@ -54,20 +54,14 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    api ("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+    implementation ("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
 
-    api("org.xpathqs:web-selenium:0.1.4")
-    api("org.xpathqs:web:0.1.4")
-    api("org.xpathqs:driver:0.1.5")
-    api("org.xpathqs:core:0.1.6")
-    api("org.xpathqs:log:0.1.5")
-    api("org.xpathqs:prop:0.2.2")
+    api("org.xpathqs:web-selenium:0.1.8")
+    api("org.xpathqs:prop:0.2.3")
     api("org.xpathqs:cache:0.2")
 
-    api("org.xpathqs:gwt:0.2.5")
 
-    api("org.seleniumhq.selenium:selenium-remote-driver:4.7.2")
-    api("org.testcontainers:selenium:1.16.0")
+    api("org.testcontainers:selenium:1.19.2")
 
     api("org.testng:testng:6.14.3")
     api("com.beust:jcommander:1.72")

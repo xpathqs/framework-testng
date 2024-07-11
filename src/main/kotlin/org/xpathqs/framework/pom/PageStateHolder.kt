@@ -1,8 +1,10 @@
 package org.xpathqs.framework.pom
 
+import org.xpathqs.driver.log.action
 import org.xpathqs.driver.model.IBaseModel
 import org.xpathqs.driver.model.clone
 import org.xpathqs.driver.model.modelFromUi
+import org.xpathqs.log.Log
 
 interface IPageStateHolder {
     fun save()
@@ -17,12 +19,16 @@ class PageStateHolder(
 
     override fun save() {
         if(origin == null) {
-            origin = if(base.isFilled) base.modelFromUi else base.clone()
+            Log.action("PageStateHolder.save") {
+                origin = if(base.isFilled) base.modelFromUi else base.clone()
+            }
         }
     }
 
     override fun revert() {
-        origin!!.clone().fill(noSubmit = true, base.modelFromUi)
+        Log.action("PageStateHolder.revert") {
+            origin!!.clone().fill(noSubmit = true, other = base.modelFromUi)
+        }
     }
 
     override val model: IBaseModel

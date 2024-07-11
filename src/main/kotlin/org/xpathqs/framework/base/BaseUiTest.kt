@@ -18,12 +18,13 @@ import org.xpathqs.driver.executor.ActionExecMap
 import org.xpathqs.driver.executor.Decorator
 import org.xpathqs.driver.executor.IExecutor
 import org.xpathqs.driver.i18n.I18nHelper
-import org.xpathqs.driver.log.Log
+import org.xpathqs.log.Log
 import org.xpathqs.driver.navigation.NavExecutor
 import org.xpathqs.driver.navigation.base.IGlobalState
 import org.xpathqs.driver.navigation.base.NoGlobalState
 import org.xpathqs.framework.UiInitializer
 import org.xpathqs.framework.pom.*
+import org.xpathqs.framework.util.DriverInitializer
 import org.xpathqs.gwt.GIVEN
 import org.xpathqs.log.BaseLogger
 import org.xpathqs.web.selenium.constants.Global
@@ -130,8 +131,11 @@ open class BaseUiTest(
             origin = ExecutorFactory(cd.driver).getCached(),
             navigator = navigator.navigator,
             globalState = globalState
-        )
-        cd.executor = executor as NavExecutor
+        ).apply {
+            cachedExecutor.nav = this.navigator
+            cd.executor = this
+        }
+
         executor = DockerExecutor(executor)
         Global.init(executor)
 
@@ -152,73 +156,32 @@ open class BaseUiTest(
         afterDriverCreated?.invoke(this)
     }
 
-
-
     private fun initDriver() {
         if(commonData.get().useDocker) {
-            initDocker()
+            val docker = DriverInitializer.initDocker()
+
+            commonData.get().driver = docker.first
+            commonData.get().docker = docker.second
+
+            SubtitleDecorator.commonData.getOrSet { org.xpathqs.framework.log.CommonData() }
+                .dockerStart = System.currentTimeMillis()
+
+             /*commonData.get().dfm = DockerFileManager(
+                 commonData.get().docker,
+                 setOf(
+                     FileResources.PDF_DOC,
+                     FileResources.TXT_DOC,
+                 )
+             )*/
         } else {
-            initSelenium(readProperties().webdriverVersion)
+            commonData.get().driver= DriverInitializer.initSelenium(readProperties().webdriverVersion)
         }
-    }
 
-    private fun getCapabilities(): ChromeOptions {
-        val options = ChromeOptions()
-        options.addArguments(
-            "--allow-insecure-localhost",
-            "--safebrowsing-disable-extension-blacklist",
-            "--safebrowsing-disable-download-protection",
+        Global.webDriver.set(
+            commonData.get().driver
         )
-
-        options.setCapability(ChromeOptions.CAPABILITY, options)
-        options.setCapability("acceptInsecureCerts", true)
-
-        val chromePrefs = HashMap<String, Any>()
-        chromePrefs["profile.default_content_settings.popups"] = 0
-        chromePrefs["download.default_directory"] = "build"
-        chromePrefs["safebrowsing.enabled"] = "true"
-
-        options.setExperimentalOption("prefs", chromePrefs)
-
-        return options
     }
 
-    private fun initDocker() {
-        Log.info("initDocker called")
-        val chrome = getCapabilities()
-        val dockerBrowser: BrowserWebDriverContainer<Nothing> = Container()
-            .withCapabilities(chrome)
-        dockerBrowser.withRecordingMode(
-            BrowserWebDriverContainer.VncRecordingMode.RECORD_ALL,
-            File("build"),
-            VncRecordingContainer.VncRecordingFormat.MP4
-        )
-        dockerBrowser.withRecordingFileFactory(
-            RecordingFileFactoryImpl()
-        )
-        dockerBrowser.start()
-
-        val driver = dockerBrowser.webDriver
-        commonData.get().driver = driver
-        commonData.get().docker = dockerBrowser
-
-        SubtitleDecorator.commonData.getOrSet { org.xpathqs.framework.log.CommonData() }
-            .dockerStart = System.currentTimeMillis()
-
-        /*commonData.get().dfm = DockerFileManager(
-            commonData.get().docker,
-            setOf(
-                FileResources.PDF_DOC,
-                FileResources.TXT_DOC,
-            )
-        )*/
-    }
-
-    private fun initSelenium(version: String = "latest") {
-        Log.info("initSelenium called")
-        val driver = DriverFactory(options = getCapabilities(), version = version).create()
-        commonData.get().driver = driver
-    }
 
     private fun startUpInit() {
         if(commonData.get() == null) {
@@ -343,6 +306,10 @@ open class BaseUiTest(
             return (commonData.get().driver as TakesScreenshot).getScreenshotAs(OutputType.BYTES)
         }
 
+        fun open(url: String) {
+            commonData.get().driver.get(url)
+        }
+
         val config = readProperties()
 
         private fun readProperties() : XpathQsConfig {
@@ -366,14 +333,9 @@ open class BaseUiTest(
         }
     }
 
-    private class TestDi: TestDescription {
+    class TestDi: TestDescription {
         override fun getTestId() = ""
         override fun getFilesystemFriendlyName() = "/build/"
-    }
-
-    private class RecordingFileFactoryImpl: RecordingFileFactory {
-        override fun recordingFileForTest(vncRecordingDirectory: File?, prefix: String?, succeeded: Boolean) =
-             Paths.get("${commonData.get().curVideoDirPath}/video.mp4").toFile()
     }
 
     val BaseSelector.webElement: WebElement

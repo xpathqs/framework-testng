@@ -2,30 +2,27 @@ package org.xpathqs.framework.extensions
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import org.testng.SkipException
 import org.xpathqs.core.selector.args.ValueArg
 import org.xpathqs.core.selector.base.BaseSelector
-import org.xpathqs.core.selector.base.findAnnotation
-import org.xpathqs.core.selector.base.findAnyParentAnnotation
-import org.xpathqs.core.selector.block.Block
-import org.xpathqs.core.selector.block.allInnerSelectors
 import org.xpathqs.core.selector.extensions.addArg
+import org.xpathqs.core.selector.extensions.rootParent
 import org.xpathqs.core.selector.selector.Selector
 import org.xpathqs.core.util.SelectorFactory.attrSelector
 import org.xpathqs.core.util.SelectorFactory.tagSelector
-import org.xpathqs.framework.pom.Page
-import org.xpathqs.framework.widgets.ValidationInput
 import org.xpathqs.driver.extensions.*
-import org.xpathqs.driver.log.Log
-import org.xpathqs.driver.navigation.base.ILoadable
 import org.xpathqs.driver.model.IBaseModel
 import org.xpathqs.driver.model.clone
-import org.xpathqs.driver.navigation.annotations.UI
-import org.xpathqs.driver.navigation.impl.PageState.Companion.isStaticSelector
+import org.xpathqs.driver.navigation.base.ILoadable
 import org.xpathqs.driver.widgets.IFormRead
-
+import org.xpathqs.framework.pom.Page
+import org.xpathqs.framework.widgets.ValidationInput
+import org.xpathqs.log.Log
+import org.xpathqs.driver.log.xpath
 import org.xpathqs.log.style.StyleFactory.selectorName
 import org.xpathqs.log.style.StyleFactory.text
 import java.time.Duration
+
 
 fun BaseSelector.beVisible() {
     if(this is Page) {
@@ -75,6 +72,13 @@ fun BaseSelector.containsText(text: String) {
     Log.step(text("Селектор ") + selectorName(this.name) + text(" должен содержать текст: '$text'")) {
         assertThat(this.text.contains(text))
             .isEqualTo(true)
+    }
+}
+
+fun BaseSelector.notContainsText(text: String) {
+    Log.step(text("Селектор ") + selectorName(this.name) + text(" не должен содержать текст: '$text'")) {
+        assertThat(this.text.contains(text))
+            .isEqualTo(false)
     }
 }
 
@@ -136,6 +140,10 @@ fun haveCount(num: Int) = ExpectedInt {
     }
 }
 
+fun notContainsText(text: String) = ExpectedText {
+    this.notContainsText(text)
+}
+
 fun containsText(text: String) = ExpectedText {
     this.containsText(text)
 }
@@ -164,6 +172,9 @@ infix fun BaseSelector.should(arg: Expected) {
         }
     } else if(arg is ExpectedVisible) {
         Log.step(text("Селектор ") + selectorName(this.name) + text(" должен быть видимым")) {
+            if((this.rootParent as? Page)?.isLoadingError(this) == true) {
+                throw SkipException("Ajax Loading error")
+            }
             if(this is ILoadable) {
                 this.waitForLoad(Duration.ofSeconds(5))
             } else {
@@ -193,7 +204,7 @@ fun BaseSelector.waitForValueChanged(duration: Duration = Duration.ofSeconds(5))
     var cond2 = (System.currentTimeMillis() - startTs) < duration.toMillis()
 
     while (cond1 && cond2) {
-        Thread.sleep(500)
+        wait(500.ms, "wait for the value change")
         invalidateCache()
 
         cond1 = originValue == this.text
@@ -241,31 +252,4 @@ fun <T:IBaseModel> T.fill(lambda: T.()->Unit) {
 fun <T: BaseSelector> T.notHidden() : T {
     this.addArg(ValueArg("not(ancestor-or-self::*[@hidden])"))
     return this
-}
-
-
-fun Block.getStaticSelectorsWithState(state: Int, includeContains: Boolean = true): Collection<BaseSelector> {
-    val res = ArrayList<BaseSelector>()
-    if(includeContains) {
-        this.annotations.filterIsInstance<UI.Nav.PathTo>().forEach {
-            if(it.selfPageState == state) {
-               // it.contains.forEach {
-                if(it.contain != Block::class) {
-                    res.addAll(
-                        it.contain.objectInstance?.allInnerSelectors ?: emptyList()
-                    )
-                }
-
-              //  }
-            }
-        }
-    }
-
-    return (res + this.allInnerSelectors)
-        .filter {
-            it.findAnnotation<UI.Visibility.State>()?.value == state
-                || it.findAnyParentAnnotation<UI.Visibility.State>()?.value == state
-        }.filter {
-            isStaticSelector(it)
-        }
 }

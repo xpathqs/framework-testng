@@ -18,6 +18,10 @@ fun BaseSelector.иметьТекст(text: String) {
     this.haveText(text)
 }
 
+fun BaseSelector.неСодержатьТекст(text: String) {
+    this.notContainsText(text)
+}
+
 fun BaseSelector.содержатьТекст(text: String) {
     this.containsText(text)
 }

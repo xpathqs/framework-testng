@@ -7,10 +7,13 @@ import org.xpathqs.core.selector.block.Block
 import org.xpathqs.core.selector.extensions.contains
 import org.xpathqs.core.selector.extensions.parentCount
 import org.xpathqs.core.selector.extensions.text
+import org.xpathqs.core.selector.extensions.textNotEmpty
 import org.xpathqs.core.util.SelectorFactory.tagSelector
 import org.xpathqs.core.util.SelectorFactory.textSelector
+import org.xpathqs.driver.constants.Global
 import org.xpathqs.driver.extensions.*
-import org.xpathqs.driver.log.Log
+import org.xpathqs.driver.model.IBaseModel
+import org.xpathqs.log.Log
 import org.xpathqs.driver.navigation.annotations.UI
 import org.xpathqs.driver.widgets.IFormInput
 import org.xpathqs.driver.widgets.IFormRead
@@ -40,18 +43,26 @@ open class Input(
                 input = input,
             )
 
-    override fun input(value: String) {
-        if(readString() != value) {
-            input.input(value)
+    override fun input(value: String, model: IBaseModel?) {
+        if(readString(model) != value) {
+            if(model != null) {
+                input.input(value, model = model)
+            } else {
+                input.input(value)
+            }
         }
     }
 
-    override fun readString(): String {
+    override fun isDisabled(): Boolean {
+        return input.isDisabled
+    }
+
+    override fun readString(model: IBaseModel?): String {
         try{
             if(input.tag.lowercase() == "textarea") {
-                return input.text
+                return input.getAttr(Global.TEXT_ARG, model)
             }
-            return input.value
+            return input.getAttr("value", model)
         } catch (e: Exception) {
             Log.info("Can't read 'value' from ${input.name}")
         }
@@ -62,6 +73,10 @@ open class Input(
         get() {
             return false
         }
+
+    override fun focus() {
+        input.click()
+    }
 }
 
 open class ValidationInput(
@@ -109,6 +124,6 @@ open class ValidationInput(
     }
 
     override fun isValidationError(): Boolean {
-        return lblError.isVisible
+        return lblError.textNotEmpty().isVisible
     }
 }

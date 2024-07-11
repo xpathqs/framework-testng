@@ -1,7 +1,7 @@
 package org.xpathqs.framework.log
 
 
-import org.xpathqs.driver.log.Log
+import org.xpathqs.log.Log
 import org.xpathqs.log.BaseLogger
 import org.xpathqs.log.Logger
 import org.xpathqs.log.MessageProcessor

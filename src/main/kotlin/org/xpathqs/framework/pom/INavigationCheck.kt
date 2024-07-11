@@ -4,12 +4,12 @@ import io.qameta.allure.Allure
 import org.testng.SkipException
 import org.xpathqs.core.selector.block.Block
 import org.xpathqs.driver.extensions.click
+import org.xpathqs.driver.extensions.getStaticSelectorsWithState
 import org.xpathqs.driver.extensions.isHidden
 import org.xpathqs.driver.extensions.waitForAllVisible
-import org.xpathqs.driver.log.Log
+import org.xpathqs.log.Log
 import org.xpathqs.driver.navigation.base.ILoadableDelegate
 import org.xpathqs.framework.extensions.beVisible
-import org.xpathqs.framework.extensions.getStaticSelectorsWithState
 import org.xpathqs.framework.extensions.should
 import org.xpathqs.gwt.WHEN
 import org.xpathqs.log.style.StyleFactory

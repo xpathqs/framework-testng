@@ -8,12 +8,15 @@ import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 import org.xpathqs.core.selector.base.BaseSelector
-import org.xpathqs.driver.log.Log
+import org.xpathqs.log.Log
 import org.xpathqs.driver.model.IBaseModel
+import org.xpathqs.driver.model.default
 import org.xpathqs.driver.navigation.annotations.UI.Visibility.Companion.UNDEF_STATE
 import org.xpathqs.driver.navigation.base.IGlobalState
 import org.xpathqs.driver.navigation.base.IModelBlock
 import org.xpathqs.driver.navigation.base.NoGlobalState
+import org.xpathqs.driver.util.ISelectorExtractor
+import org.xpathqs.driver.util.SelectorExtractor
 import org.xpathqs.framework.annotation.getGeneratorConfig
 import org.xpathqs.framework.log.ScreenshotConfig
 import org.xpathqs.framework.pom.*
@@ -58,8 +61,16 @@ open class BasePageTest(
 ), ITest {
 
     override fun precondition() {
+        page.navigate(state)
+        initValidationCheck()
+    }
+
+    protected fun initValidationCheck() {
         if(validationCheck.model != null) {
-            stateHolder = PageStateHolder(validationCheck.model!!.apply { default() })
+            val m = validationCheck.model!!
+            stateHolder = PageStateHolder(
+                if(m.isInitialized) m else m.default()
+            )
             (validationCheck as ValidationCheck).stateHolder = stateHolder
         }
     }

@@ -80,7 +80,7 @@ open class Required<T>(
                 sel.clear()
 
                 if(sel is ValidationInput) {
-                    sel.input.click()
+                    sel.focus()
                 } else {
                     sel.click()
                 }
@@ -187,7 +187,7 @@ open class Length<T>(
                 }
 
                 if(sel is ValidationInput) {
-                    sel.input.click()
+                    sel.focus()
                 } else {
                     sel.click()
                 }
@@ -471,10 +471,15 @@ object DateHelper {
     }
 
     fun processDate(str: String): String {
-        val splited = str.split(".")
-        val d = if(splited[0].length == 1) "0"+splited[0] else splited[0]
-        val m = if(splited[1].length == 1) "0"+splited[1] else splited[1]
-        val y = splited[2]
+        if(str.isEmpty() || str.equals("null", ignoreCase = true)) {
+            return ""
+        }
+
+        val split = str.split(".")
+        val d = if(split[0].length == 1) "0"+split[0] else split[0]
+        val m = if(split[1].length == 1) "0"+split[1] else split[1]
+        val y = split[2]
+
         return "$d.$m.$y"
     }
 }
@@ -491,5 +496,6 @@ val IBaseModel.isApplyModel: Boolean
 enum class InvalidationAction {FOCUS_LOST, SUBMIT}
 
 class ValidationConfig(
-    val invalidationAction: InvalidationAction = InvalidationAction.FOCUS_LOST
+    val invalidationAction: InvalidationAction = InvalidationAction.FOCUS_LOST,
+    val reloadByUrlBeforeCheck: Boolean = false
 )

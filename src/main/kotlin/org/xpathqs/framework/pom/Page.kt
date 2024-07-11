@@ -8,7 +8,10 @@ import org.xpathqs.core.selector.base.hasAnyParentAnnotation
 import org.xpathqs.core.selector.block.allInnerSelectors
 import org.xpathqs.core.selector.block.findWithAnnotation
 import org.xpathqs.driver.extensions.click
-import org.xpathqs.driver.log.Log
+import org.xpathqs.driver.extensions.ms
+import org.xpathqs.driver.extensions.wait
+import org.xpathqs.driver.model.IBaseModel
+import org.xpathqs.log.Log
 import org.xpathqs.driver.navigation.Navigator
 import org.xpathqs.driver.navigation.annotations.UI
 import org.xpathqs.driver.navigation.base.*
@@ -30,9 +33,9 @@ open class Page(
         }
 
     fun removeInputFocus() {
-        this.findWithAnnotation(UI.Widgets.ClickToClose::class)?.let {
+        this.findWithAnnotation(UI.Widgets.ClickToFocusLost::class)?.let {
             it.click()
-            Thread.sleep(500) //небольшое ожидание, для того чтоб JS успел что-то отрендерить
+            wait(200.ms, "wait after click to focus lost")
         }
     }
 
@@ -41,8 +44,8 @@ open class Page(
     override val nav: NavigableDetermination
         get() = NavigableDetermination(navigator, this)
 
-    override fun navigate(elem: ISelector, navigator: INavigator) {
-        nav.navigate(elem, navigator)
+    override fun navigate(elem: ISelector, navigator: INavigator, model: IBaseModel) : Boolean {
+        return nav.navigate(elem, navigator, model)
     }
 
     override val loadable by lazy {
@@ -57,11 +60,7 @@ open class Page(
     }
 
     open fun refresh() {
-        if(url.isNotEmpty()) {
-            BaseUiTest.commonData.get().driver.get(url)
-        } else {
-            BaseUiTest.commonData.get().driver.navigate().refresh()
-        }
+        BaseUiTest.commonData.get().driver.navigate().refresh()
     }
 
     open fun openByUrl() {

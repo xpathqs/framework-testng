@@ -9,7 +9,7 @@ import org.xpathqs.framework.validation.*
 import org.xpathqs.framework.widgets.ValidationInput
 import org.xpathqs.driver.extensions.click
 import org.xpathqs.driver.extensions.screenshot
-import org.xpathqs.driver.log.Log
+import org.xpathqs.log.Log
 import org.xpathqs.driver.model.IBaseModel
 import org.xpathqs.driver.model.modelFromUi
 import org.xpathqs.driver.navigation.annotations.UI
@@ -40,33 +40,44 @@ abstract class ValidationCheck(
            // it.name = "Validation of field '${tc.v.prop.name}' with type '${tc.rule}'"
             it.name = "Валидация поля '${tc.v.prop.name}' с типом '${tc.rule}'"
         }
-
-        stateHolder?.save()
-        val model = tc.model ?: model
-        if(model?.isApplyModel == true && applyModels.contains(model)) {
-            model.fill(true)
-            applyModels.add(model)
-        }
-
-        if(model != null) {
-            if(!(tc.rule.isConditionPassed(model))) {
-                throw SkipException("Skipped due to the condition restriction")
+        Log.action("checkValidation") {
+            stateHolder?.save()
+            val model = tc.model ?: model
+            if(model?.isApplyModel == true && applyModels.contains(model)) {
+                model.fill(true)
+                applyModels.add(model)
             }
-            if(!tc.skipRevert) {
-                stateHolder?.revert()
+            Log.info("After fill")
+            if(model != null) {
+                if(!(tc.rule.isConditionPassed(model))) {
+                    throw SkipException("Skipped due to the condition restriction")
+                }
+                if(!tc.skipRevert) {
+                    if(!methodCalled && tc.vc.reloadByUrlBeforeCheck) {
+                        Log.info("Refreshing page before validation called")
+                        (model.view?.rootParent as? Page)?.openByUrl()
+                        Log.info("Page reload completed")
+                    } else {
+                        stateHolder?.revert()
+                    }
+                }
+                Log.info("63")
+                uiModel = model.modelFromUi
+                Log.action("Executing rule") {
+                    when(tc.rule) {
+                        is Required<*> -> testRequired(tc, model)
+                        is Max<*> -> testMax(tc, model)
+                        is Date<*> -> testRule(tc.v, tc.rule, model)
+                        is MoreThan<*> -> testRule(tc.v, tc.rule, model)
+                        is MoreOrEqThan<*> -> testRule(tc.v, tc.rule, model)
+                        is DependsOn<*> -> testRule(tc.v, tc.rule, model)
+                        is DifferanceRange<*> -> testRule(tc.v, tc.rule, model)
+                        is Length<*> -> testRule(tc.v, tc.rule, model)
+                    }
+                }
+                Log.info("77")
+                methodCalled = true
             }
-            uiModel = model.modelFromUi
-            when(tc.rule) {
-                is Required<*> -> testRequired(tc, model)
-                is Max<*> -> testMax(tc, model)
-                is Date<*> -> testRule(tc.v, tc.rule, model)
-                is MoreThan<*> -> testRule(tc.v, tc.rule, model)
-                is MoreOrEqThan<*> -> testRule(tc.v, tc.rule, model)
-                is DependsOn<*> -> testRule(tc.v, tc.rule, model)
-                is DifferanceRange<*> -> testRule(tc.v, tc.rule, model)
-                is Length<*> -> testRule(tc.v, tc.rule, model)
-            }
-            methodCalled = true
         }
     }
 
@@ -100,7 +111,7 @@ abstract class ValidationCheck(
 
         WHEN("корректное значение повторно введено") {
             stateHolder?.let {
-                vc.rule.revert(vc.v.prop, it.model)
+                vc.rule.revert(vc.v.prop, this@ValidationCheck.model!!)
             }
 
             (block.rootParent as Page).removeInputFocus()
@@ -130,7 +141,7 @@ abstract class ValidationCheck(
         WHEN("корректное значение введено") {
             if(!vc.v.parent.isInvalidAtStart) {
                 stateHolder?.let {
-                    vc.rule.revert(vc.v.prop, it.model)
+                    vc.rule.revert(vc.v.prop, this@ValidationCheck.model!!)
                 }
             } else {
                 model.fill(vc.v.prop as KMutableProperty<*>)
@@ -269,7 +280,8 @@ abstract class ValidationCheck(
                     ValidationTc(
                         v = v,
                         rule = r,
-                        skipRevert = true
+                        skipRevert = true,
+                        vc = (model as IValidationModel<*>).validations!!.config
                     )
                 )
             }

@@ -61,7 +61,7 @@ abstract class ValidationCheck(
                         stateHolder?.revert()
                     }
                 }
-                Log.info("63")
+
                 uiModel = model.modelFromUi
                 Log.action("Executing rule") {
                     when(tc.rule) {
